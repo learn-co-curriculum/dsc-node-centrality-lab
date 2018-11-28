@@ -25,7 +25,7 @@ The datasets have been made available for you in the repo. You are encouraged to
 
 Let's get on with it. 
 
-### Load necessary libraries
+## Load necessary libraries
 
 - Let's give you a head start by loading the libraries that you might need for this experiment. 
 
@@ -40,7 +40,7 @@ warnings.filterwarnings('ignore')
 %matplotlib inline
 ```
 
-###  Load the dataset 
+##  Load the dataset 
 
 The dataset is available for all 5 books, with two CSV files for each book. One contains nodes data as adjacency matrix and other carries edges data as edge list, e.g. for book 1, `asoiaf-book1-edges.csv` and `asoiaf-book1-nodes.csv`. So we have 10 files in total. 
 
@@ -58,7 +58,7 @@ book4_df = pd.read_csv('asiof/asoiaf-book4-edges.csv')
 book5_df = pd.read_csv('asiof/asoiaf-book5-edges.csv')
 ```
 
-### Create Empty graph instances for each book
+## Create Empty graph instances for each book
 
 
 ```python
@@ -70,7 +70,7 @@ G4 = nx.Graph()
 G5 = nx.Graph()
 ```
 
-### Create Graph
+## Create Graph
 - Read the edge lists from the dataframes above into relevant graphs. 
 - inspect the contents of graph to get an idea about the data structures contained within 
 
@@ -92,7 +92,7 @@ for row in book5_df.iterrows():
 
 Let's use and compare different centralities measures we saw earlier to identify importance of nodes in this network. There is no one right way of calaculating it, every approach has a different meaning.
 
-### Calculate Degree Centrality 
+## Calculate Degree Centrality 
 Degree centrality which is defined by degree of a node (number of neighbors) divided by a noramlizing factor n-1 where n is the number of nodes.
 
 - __Find the neighbours of '**Catelyn-Stark**' from book 1.__
@@ -214,7 +214,7 @@ plt.show()
 # Eddard Stark , appearing as an outlier in histogram has highest centrality 
 ```
 
-###  Weighted Degree Centrality
+##  Weighted Degree Centrality
 
 - Create a new centrality measure as a function, `weighted_degree_centrality(Graph)` which takes in Graph and the returns a weighted degree centrality dictionary. 
 
@@ -323,7 +323,7 @@ sum(list(weighted_degree_centrality(G1).values()))
 
 
 
-## Betweeness centrality 
+## Betweenness centrality 
 
 - __Calculate the weighted and un-weighted "Betweenness" centrality for book 2, and compare top ten characters as above__
 - __Comment on the results__
