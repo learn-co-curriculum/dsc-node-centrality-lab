@@ -36,15 +36,11 @@ warnings.filterwarnings('ignore')
 
 Start by loading the dataset as a pandas DataFrame. From this, you'll then create a network representation of the dataset using NetworkX. 
 
-The dataset is broken into 10 different files: 2 files for each of the 5 books. One of these files contains node data for each book, while the other contains edge data. Load in the edge data for the 5 books and concatenate them into a single DataFrame.
-
-Example file names are `asoiaf-book1-edges.csv` and `asoiaf-book1-nodes.csv`. 
+The dataset is stored in the file `asoiaf-all-edges.csv`.
 
 
 ```python
 # Load edges into dataframes
-df = pd.read_csv('asoiaf-all-edges.csv')
-df.head()
 ```
 
 
@@ -127,7 +123,6 @@ df.head()
 
 ```python
 # Create empty instances for each book above
-G = nx.Graph()
 ```
 
 ## Create a Graph
@@ -137,11 +132,6 @@ Now that you have the data loaded as a pandas DataFrame, iterate through the dat
 
 ```python
 # Read edge lists into dataframes
-for row in df.index:
-    source = df['Source'][row]
-    target = df['Target'][row]
-    weight = df['weight'][row]
-    G.add_edge(source,target, weight=weight)
 ```
 
 ## Calculate Degree
@@ -151,13 +141,7 @@ To start the investigation of the most central characters in the books, calculat
 
 ```python
 #Your code here
-pd.DataFrame.from_dict(nx.degree_centrality(G), orient='index').sort_values(by=0, ascending=False).head(10).plot(kind='barh', color="#1cf0c7")
-plt.title('Top 10 Characters by Degree Centrality');
 ```
-
-
-![png](index_files/index_10_0.png)
-
 
 ## Closeness Centrality
 
@@ -165,13 +149,8 @@ Repeat the above exercise for the top 10 characters according to closeness centr
 
 
 ```python
-pd.DataFrame.from_dict(nx.closeness_centrality(G), orient='index').sort_values(by=0, ascending=False).head(10).plot(kind='barh', color="#1cf0c7")
-plt.title('Top 10 Characters by Closeness Centrality');
+#Your code here
 ```
-
-
-![png](index_files/index_12_0.png)
-
 
 ## Betweeness Centrality
 
@@ -179,13 +158,8 @@ Repeat the process one more time for betweeness centrality.
 
 
 ```python
-pd.DataFrame.from_dict(nx.betweenness_centrality(G), orient='index').sort_values(by=0, ascending=False).head(10).plot(kind='barh', color="#1cf0c7")
-plt.title('Top 10 Characters by Betweeness Centrality');
+#Your code here
 ```
-
-
-![png](index_files/index_14_0.png)
-
 
 ## Putting it All Together
 
@@ -193,84 +167,8 @@ Great! Now try putting all of these metrics together along with eigenvector cent
 
 
 ```python
-degrees = nx.degree_centrality(G)
-closeness = nx.closeness_centrality(G)
-betweeness = nx.betweenness_centrality(G)
-eigs = nx.eigenvector_centrality(G)
-centrality = pd.DataFrame([degrees, closeness, betweeness, eigs]).transpose()
-centrality.columns = ["degrees", "closeness", "betweeness", "eigs"]
-centrality = centrality.sort_values(by='eigs', ascending=False)
-centrality.head()
+#Your code here
 ```
-
-
-
-
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>degrees</th>
-      <th>closeness</th>
-      <th>betweeness</th>
-      <th>eigs</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>Tyrion-Lannister</th>
-      <td>0.153459</td>
-      <td>0.476333</td>
-      <td>0.162191</td>
-      <td>0.251558</td>
-    </tr>
-    <tr>
-      <th>Cersei-Lannister</th>
-      <td>0.122013</td>
-      <td>0.454545</td>
-      <td>0.088704</td>
-      <td>0.235771</td>
-    </tr>
-    <tr>
-      <th>Jaime-Lannister</th>
-      <td>0.127044</td>
-      <td>0.451961</td>
-      <td>0.100838</td>
-      <td>0.226339</td>
-    </tr>
-    <tr>
-      <th>Joffrey-Baratheon</th>
-      <td>0.086792</td>
-      <td>0.433952</td>
-      <td>0.031759</td>
-      <td>0.214376</td>
-    </tr>
-    <tr>
-      <th>Sansa-Stark</th>
-      <td>0.094340</td>
-      <td>0.433007</td>
-      <td>0.048691</td>
-      <td>0.205842</td>
-    </tr>
-  </tbody>
-</table>
-</div>
-
-
 
 ## Identifying Key Players
 
@@ -278,125 +176,8 @@ While centrality can tell us a lot, you've also begun to see how certain individ
 
 
 ```python
-centrality['bridge_proxy'] = centrality['betweeness'] / centrality.degrees
-centrality = centrality.sort_values(by='bridge_proxy', ascending=False)
-centrality.head(10)
+#Your code here
 ```
-
-
-
-
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>degrees</th>
-      <th>closeness</th>
-      <th>betweeness</th>
-      <th>eigs</th>
-      <th>bridge_proxy</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>Aggar</th>
-      <td>0.005031</td>
-      <td>0.269036</td>
-      <td>0.007997</td>
-      <td>0.001665</td>
-      <td>1.589358</td>
-    </tr>
-    <tr>
-      <th>Alleras</th>
-      <td>0.010063</td>
-      <td>0.272915</td>
-      <td>0.014199</td>
-      <td>0.002928</td>
-      <td>1.411040</td>
-    </tr>
-    <tr>
-      <th>Theon-Greyjoy</th>
-      <td>0.083019</td>
-      <td>0.423323</td>
-      <td>0.111283</td>
-      <td>0.102481</td>
-      <td>1.340458</td>
-    </tr>
-    <tr>
-      <th>Jon-Snow</th>
-      <td>0.143396</td>
-      <td>0.445378</td>
-      <td>0.192120</td>
-      <td>0.144211</td>
-      <td>1.339782</td>
-    </tr>
-    <tr>
-      <th>Cutjack</th>
-      <td>0.003774</td>
-      <td>0.255135</td>
-      <td>0.005028</td>
-      <td>0.001404</td>
-      <td>1.332494</td>
-    </tr>
-    <tr>
-      <th>Red-Oarsman</th>
-      <td>0.003774</td>
-      <td>0.261255</td>
-      <td>0.005025</td>
-      <td>0.001042</td>
-      <td>1.331654</td>
-    </tr>
-    <tr>
-      <th>Daenerys-Targaryen</th>
-      <td>0.091824</td>
-      <td>0.383317</td>
-      <td>0.118418</td>
-      <td>0.063043</td>
-      <td>1.289621</td>
-    </tr>
-    <tr>
-      <th>Victarion-Greyjoy</th>
-      <td>0.030189</td>
-      <td>0.333753</td>
-      <td>0.036451</td>
-      <td>0.009395</td>
-      <td>1.207431</td>
-    </tr>
-    <tr>
-      <th>Pate-(novice)</th>
-      <td>0.008805</td>
-      <td>0.215097</td>
-      <td>0.010042</td>
-      <td>0.000175</td>
-      <td>1.140428</td>
-    </tr>
-    <tr>
-      <th>Tyrion-Lannister</th>
-      <td>0.153459</td>
-      <td>0.476333</td>
-      <td>0.162191</td>
-      <td>0.251558</td>
-      <td>1.056901</td>
-    </tr>
-  </tbody>
-</table>
-</div>
-
-
 
 ## Drawing the Graph
 
@@ -404,16 +185,8 @@ To visualize all of these relationships, draw a graph of the network.
 
 
 ```python
-edge_labels = labels = nx.get_edge_attributes(G,'weight')
-plt.figure(figsize=(12,12))
-nx.draw(G, with_labels=True, pos=nx.spring_layout(G, random_state=10),
-        edge_labels=edge_labels, alpha=.8, node_color="#1cf0c7", node_size=700);
-nx.draw_networkx_edge_labels(G,pos=nx.spring_layout(G, random_state=10),edge_labels=labels);
+#Your code here
 ```
-
-
-![png](index_files/index_20_0.png)
-
 
 ## Subsetting the Graph
 
@@ -421,30 +194,8 @@ As you can see, the above graph is undoubtedly noisy, making it difficult to dis
 
 
 ```python
-# Read edge lists into dataframes
-threshold = 75
-colors = []
-G = nx.Graph()
-for row in df.index:
-    source = df['Source'][row]
-    target = df['Target'][row]
-    weight = df['weight'][row]
-    if weight >= threshold:
-        G.add_edge(source,target, weight=weight)
-edge_labels = labels = nx.get_edge_attributes(G,'weight')
-for node in G.nodes:
-    if node in centrality.index[:10]:
-        colors.append("#ffd43d")
-    else:
-        colors.append("#1cf0c7")
-plt.figure(figsize=(18,10))
-nx.draw(G, with_labels=True, pos=nx.spring_layout(G, random_state=8),
-        edge_labels=edge_labels, alpha=.8, node_color=colors, node_size=1500);
+#Your code here
 ```
-
-
-![png](index_files/index_22_0.png)
-
 
 ## Summary 
 
