@@ -15,7 +15,7 @@ You will be able to:
 
 A. J. Beveridge, and J. Shan  created a network from George R. Martin's "A song of ice and fire" by extracting relationships between characters of the story. [The dataset is available at Github](https://github.com/mathbeveridge/asoiaf). Relationships between characters were formed every time a character's name appears within 15 words of another character. This was designed as an approximate metric for character's interactions with each other. The results of this simple analysis are quite profound and produce interesting visuals such as this graph:
 
-<img src="got.png" width=800>
+<img src="images/got.png" width=800>
 
 With that, it's your turn to start investigating the most central characters!
 
