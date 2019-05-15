@@ -1,9 +1,9 @@
 
-# Network Dynamics: Node Centrality - lab
+# Network Dynamics: Node Centrality - Lab
 
 ## Introduction
-In this lab, we shall put the node centrality measures in to practice to analyze the character interactions in graph structure from the popular series of novels called ""A Song of Ice and Fire" by George R. R. Martin. The of famous HBO series "Game of Thrones" is derived from this saga. In this lab, we shall calculate different centrality measures to identify the the importance of characters as the story progresses.  
 
+In this lab, you'll get a chance to practice implementing and interpreting the centrality metrics from the previous section. You'll do this be investigating the social network from Game of Thrones!
 
 ## Objectives
 You will be able to:
@@ -11,29 +11,21 @@ You will be able to:
 - Understand and calculate Degree, Closeness, Betweenness and Eigenvector centrality measures
 - Describe the use case for several centrality measures
 
-## ASIOF (A Song of Ice and Fire) Character Interaction Graph Data
+## Character Interaction Graph Data
 
-A. J. Beveridge, and J. Shan  created a network from books "A song of ice and fire" by extracting relationships between characters of the story. [The dataset is available at Github](https://github.com/mathbeveridge/asoiaf)
-as an interaction network which was built as
-> Parse the text and build a graph by connecting (creating an edge) two characters (nodes of the graph) whenever their names appear within 15 words. The edge weight corresponds to the number of interactions.
-
-<img src="parse.png" width=300>
-
-The datasets have been made available for you in the repo. You are encouraged to [visit A. J. Beveridge's blog](https://networkofthrones.wordpress.com) to see how this dataset is created, and different network analysis activities which are being performed with this dataset. The image you see below, has been created using same datasets. The blog gives you information on this and more experiments. For this lab, we shall focus more on graph analysis than visualizations.
+A. J. Beveridge, and J. Shan  created a network from George R. Martin's "A song of ice and fire" by extracting relationships between characters of the story. [The dataset is available at Github](https://github.com/mathbeveridge/asoiaf). Relationships between characters were formed every time a character's name appears within 15 words of another character. This was designed as an approximate metric for character's interactions with each other. The results of this simple analysis are quite profound and produce interesting visuals such as this graph:
 
 <img src="got.png" width=800>
 
-Let's get on with it. 
-
-## Load necessary libraries
-
-- Let's give you a head start by loading the libraries that you might need for this experiment. 
+With that, it's your turn to start investigating the most central characters!
 
 
 ```python
 import pandas as pd
 import networkx as nx
 import matplotlib.pyplot as plt
+import seaborn as sns
+sns.set_style('darkgrid')
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -42,876 +34,416 @@ warnings.filterwarnings('ignore')
 
 ##  Load the dataset 
 
-The dataset is available for all 5 books, with two CSV files for each book. One contains nodes data as adjacency matrix and other carries edges data as edge list, e.g. for book 1, `asoiaf-book1-edges.csv` and `asoiaf-book1-nodes.csv`. So we have 10 files in total. 
+Start by loading the dataset as a pandas DataFrame. From this, you'll then create a network representation of the dataset using NetworkX. 
 
-- Read edge data for all books into pandas dataframe:  book1_df .. book5_df. 
+The dataset is broken into 10 different files: 2 files for each of the 5 books. One of these files contains node data for each book, while the other contains edge data. Load in the edge data for the 5 books and concatenate them into a single DataFrame.
 
-How about using a for loop to do this in one go - optional.
+Example file names are `asoiaf-book1-edges.csv` and `asoiaf-book1-nodes.csv`. 
 
 
 ```python
 # Load edges into dataframes
-book1_df = pd.read_csv('asiof/asoiaf-book1-edges.csv')
-book2_df = pd.read_csv('asiof/asoiaf-book2-edges.csv')
-book3_df = pd.read_csv('asiof/asoiaf-book3-edges.csv')
-book4_df = pd.read_csv('asiof/asoiaf-book4-edges.csv')
-book5_df = pd.read_csv('asiof/asoiaf-book5-edges.csv')
+df = pd.read_csv('asoiaf-all-edges.csv')
+df.head()
 ```
+
+
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Source</th>
+      <th>Target</th>
+      <th>Type</th>
+      <th>id</th>
+      <th>weight</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>Addam-Marbrand</td>
+      <td>Brynden-Tully</td>
+      <td>Undirected</td>
+      <td>0</td>
+      <td>3</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>Addam-Marbrand</td>
+      <td>Cersei-Lannister</td>
+      <td>Undirected</td>
+      <td>1</td>
+      <td>3</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>Addam-Marbrand</td>
+      <td>Gyles-Rosby</td>
+      <td>Undirected</td>
+      <td>2</td>
+      <td>3</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>Addam-Marbrand</td>
+      <td>Jaime-Lannister</td>
+      <td>Undirected</td>
+      <td>3</td>
+      <td>14</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>Addam-Marbrand</td>
+      <td>Jalabhar-Xho</td>
+      <td>Undirected</td>
+      <td>4</td>
+      <td>3</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
 
 ## Create Empty graph instances for each book
 
 
 ```python
 # Create empty instances for each book above
-G1 = nx.Graph()
-G2 = nx.Graph()
-G3 = nx.Graph()
-G4 = nx.Graph()
-G5 = nx.Graph()
+G = nx.Graph()
 ```
 
-## Create Graph
-- Read the edge lists from the dataframes above into relevant graphs. 
-- inspect the contents of graph to get an idea about the data structures contained within 
+## Create a Graph
+
+Now that you have the data loaded as a pandas DataFrame, iterate through the data and create appropriate edges to the empty graph you instantiated above. Be sure to add the weight to each edge.
 
 
 ```python
-for row in book1_df.iterrows():
-    G1.add_edge(row[1]['Source'], row[1]['Target'], weight=row[1]['weight'], book=row[1]['book'])
-for row in book2_df.iterrows():
-    G2.add_edge(row[1]['Source'], row[1]['Target'], weight=row[1]['weight'], book=row[1]['book'])
-for row in book3_df.iterrows():
-    G3.add_edge(row[1]['Source'], row[1]['Target'], weight=row[1]['weight'], book=row[1]['book'])
-for row in book4_df.iterrows():
-    G4.add_edge(row[1]['Source'], row[1]['Target'], weight=row[1]['weight'], book=row[1]['book'])
-for row in book5_df.iterrows():
-    G5.add_edge(row[1]['Source'], row[1]['Target'], weight=row[1]['weight'], book=row[1]['book'])
+# Read edge lists into dataframes
+for row in df.index:
+    source = df['Source'][row]
+    target = df['Target'][row]
+    weight = df['weight'][row]
+    G.add_edge(source,target, weight=weight)
 ```
 
-## Finding important nodes (characters) 
+## Calculate Degree
 
-Let's use and compare different centralities measures we saw earlier to identify importance of nodes in this network. There is no one right way of calaculating it, every approach has a different meaning.
-
-## Calculate Degree Centrality 
-Degree centrality which is defined by degree of a node (number of neighbors) divided by a noramlizing factor n-1 where n is the number of nodes.
-
-- __Find the neighbours of '**Catelyn-Stark**' from book 1.__
+To start the investigation of the most central characters in the books, calculate the degree centrality for each character. Then create a bar graph of the top 10 characters according to degree centrality.
 
 
 ```python
-# Neighbors for catelyn stark
-list(G1.neighbors('Catelyn-Stark'))
+#Your code here
+pd.DataFrame.from_dict(nx.degree_centrality(G), orient='index').sort_values(by=0, ascending=False).head(10).plot(kind='barh', color="#1cf0c7")
+plt.title('Top 10 Characters by Degree Centrality');
 ```
 
 
+![png](index_files/index_10_0.png)
 
 
-    ['Arya-Stark',
-     'Bran-Stark',
-     'Bronn',
-     'Brynden-Tully',
-     'Cersei-Lannister',
-     'Colemon',
-     'Donnel-Waynwood',
-     'Eddard-Stark',
-     'Edmure-Tully',
-     'Eon-Hunter',
-     'Hallis-Mollen',
-     'Hoster-Tully',
-     'Jaime-Lannister',
-     'Joffrey-Baratheon',
-     'Jon-Arryn',
-     'Jon-Snow',
-     'Jon-Umber-(Greatjon)',
-     'Luwin',
-     'Lysa-Arryn',
-     'Marillion',
-     'Masha-Heddle',
-     'Moreo-Tumitis',
-     'Mya-Stone',
-     'Mychel-Redfort',
-     'Nestor-Royce',
-     'Petyr-Baelish',
-     'Rickard-Karstark',
-     'Rickon-Stark',
-     'Robb-Stark',
-     'Robert-Arryn',
-     'Robert-Baratheon',
-     'Rodrik-Cassel',
-     'Sansa-Stark',
-     'Stevron-Frey',
-     'Theon-Greyjoy',
-     'Tyrion-Lannister',
-     'Tytos-Blackwood',
-     'Tywin-Lannister',
-     'Vardis-Egen',
-     'Varys',
-     'Walder-Frey',
-     'Wendel-Manderly',
-     'Willis-Wode']
+## Closeness Centrality
 
-
-
- `nx.degree_centrality(graph)` returns a dictionary where keys are the nodes and values are the corresponding degree centrality. 
- 
-- __Find the five most and least important characters from book 1 according to degree centrality__
+Repeat the above exercise for the top 10 characters according to closeness centrality.
 
 
 ```python
-# Five most important characters from book 1 according to degree centrality
-sorted(nx.degree_centrality(G1).items(), key=lambda x:x[1], reverse=True)[0:5]
+pd.DataFrame.from_dict(nx.closeness_centrality(G), orient='index').sort_values(by=0, ascending=False).head(10).plot(kind='barh', color="#1cf0c7")
+plt.title('Top 10 Characters by Closeness Centrality');
+```
+
+
+![png](index_files/index_12_0.png)
+
+
+## Betweeness Centrality
+
+Repeat the process one more time for betweeness centrality.
+
+
+```python
+pd.DataFrame.from_dict(nx.betweenness_centrality(G), orient='index').sort_values(by=0, ascending=False).head(10).plot(kind='barh', color="#1cf0c7")
+plt.title('Top 10 Characters by Betweeness Centrality');
+```
+
+
+![png](index_files/index_14_0.png)
+
+
+## Putting it All Together
+
+Great! Now try putting all of these metrics together along with eigenvector centrality. Combine all four metrics into a single dataframe for each character.
+
+
+```python
+degrees = nx.degree_centrality(G)
+closeness = nx.closeness_centrality(G)
+betweeness = nx.betweenness_centrality(G)
+eigs = nx.eigenvector_centrality(G)
+centrality = pd.DataFrame([degrees, closeness, betweeness, eigs]).transpose()
+centrality.columns = ["degrees", "closeness", "betweeness", "eigs"]
+centrality = centrality.sort_values(by='eigs', ascending=False)
+centrality.head()
 ```
 
 
 
 
-    [('Eddard-Stark', 0.3548387096774194),
-     ('Robert-Baratheon', 0.2688172043010753),
-     ('Tyrion-Lannister', 0.24731182795698928),
-     ('Catelyn-Stark', 0.23118279569892475),
-     ('Jon-Snow', 0.19892473118279572)]
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>degrees</th>
+      <th>closeness</th>
+      <th>betweeness</th>
+      <th>eigs</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Tyrion-Lannister</th>
+      <td>0.153459</td>
+      <td>0.476333</td>
+      <td>0.162191</td>
+      <td>0.251558</td>
+    </tr>
+    <tr>
+      <th>Cersei-Lannister</th>
+      <td>0.122013</td>
+      <td>0.454545</td>
+      <td>0.088704</td>
+      <td>0.235771</td>
+    </tr>
+    <tr>
+      <th>Jaime-Lannister</th>
+      <td>0.127044</td>
+      <td>0.451961</td>
+      <td>0.100838</td>
+      <td>0.226339</td>
+    </tr>
+    <tr>
+      <th>Joffrey-Baratheon</th>
+      <td>0.086792</td>
+      <td>0.433952</td>
+      <td>0.031759</td>
+      <td>0.214376</td>
+    </tr>
+    <tr>
+      <th>Sansa-Stark</th>
+      <td>0.094340</td>
+      <td>0.433007</td>
+      <td>0.048691</td>
+      <td>0.205842</td>
+    </tr>
+  </tbody>
+</table>
+</div>
 
 
+
+## Identifying Key Players
+
+While centrality can tell us a lot, you've also begun to see how certain individuals may not be the most central characters, but can be pivotal in the flow of information from one community to another. In the previous lesson, such nodes were labeled as 'bridges' acting as the intermediaries between two clusters. Try and identify such characters from this dataset.
 
 
 ```python
-# Five least important characters from book 1 according to degree centrality
-sorted(nx.degree_centrality(G1).items(), key=lambda x:x[1])[0:5]
+centrality['bridge_proxy'] = centrality['betweeness'] / centrality.degrees
+centrality = centrality.sort_values(by='bridge_proxy', ascending=False)
+centrality.head(10)
 ```
 
 
 
 
-    [('Clydas', 0.005376344086021506),
-     ('Arthur-Dayne', 0.005376344086021506),
-     ('Arys-Oakheart', 0.005376344086021506),
-     ('Mance-Rayder', 0.005376344086021506),
-     ('Thoros-of-Myr', 0.005376344086021506)]
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>degrees</th>
+      <th>closeness</th>
+      <th>betweeness</th>
+      <th>eigs</th>
+      <th>bridge_proxy</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Aggar</th>
+      <td>0.005031</td>
+      <td>0.269036</td>
+      <td>0.007997</td>
+      <td>0.001665</td>
+      <td>1.589358</td>
+    </tr>
+    <tr>
+      <th>Alleras</th>
+      <td>0.010063</td>
+      <td>0.272915</td>
+      <td>0.014199</td>
+      <td>0.002928</td>
+      <td>1.411040</td>
+    </tr>
+    <tr>
+      <th>Theon-Greyjoy</th>
+      <td>0.083019</td>
+      <td>0.423323</td>
+      <td>0.111283</td>
+      <td>0.102481</td>
+      <td>1.340458</td>
+    </tr>
+    <tr>
+      <th>Jon-Snow</th>
+      <td>0.143396</td>
+      <td>0.445378</td>
+      <td>0.192120</td>
+      <td>0.144211</td>
+      <td>1.339782</td>
+    </tr>
+    <tr>
+      <th>Cutjack</th>
+      <td>0.003774</td>
+      <td>0.255135</td>
+      <td>0.005028</td>
+      <td>0.001404</td>
+      <td>1.332494</td>
+    </tr>
+    <tr>
+      <th>Red-Oarsman</th>
+      <td>0.003774</td>
+      <td>0.261255</td>
+      <td>0.005025</td>
+      <td>0.001042</td>
+      <td>1.331654</td>
+    </tr>
+    <tr>
+      <th>Daenerys-Targaryen</th>
+      <td>0.091824</td>
+      <td>0.383317</td>
+      <td>0.118418</td>
+      <td>0.063043</td>
+      <td>1.289621</td>
+    </tr>
+    <tr>
+      <th>Victarion-Greyjoy</th>
+      <td>0.030189</td>
+      <td>0.333753</td>
+      <td>0.036451</td>
+      <td>0.009395</td>
+      <td>1.207431</td>
+    </tr>
+    <tr>
+      <th>Pate-(novice)</th>
+      <td>0.008805</td>
+      <td>0.215097</td>
+      <td>0.010042</td>
+      <td>0.000175</td>
+      <td>1.140428</td>
+    </tr>
+    <tr>
+      <th>Tyrion-Lannister</th>
+      <td>0.153459</td>
+      <td>0.476333</td>
+      <td>0.162191</td>
+      <td>0.251558</td>
+      <td>1.056901</td>
+    </tr>
+  </tbody>
+</table>
+</div>
 
 
 
-- __Plot and explain histogram from degree centrality values, calculated from book 1, and comment on the output__
+## Drawing the Graph
+
+To visualize all of these relationships, draw a graph of the network.
 
 
 ```python
-# Plot a histogram of degree centrality
-plt.style.use('seaborn')
-plt.hist(list(nx.degree_centrality(G1).values()))
-plt.xlabel('Degree Centrality')
-plt.ylabel('Frequency')
-plt.show()
-```
-
-
-![png](index_files/index_16_0.png)
-
-
-
-```python
-# Your observations here 
-
-# A large number characters with a very low centrality value
-# Eddard Stark , appearing as an outlier in histogram has highest centrality 
-```
-
-##  Weighted Degree Centrality
-
-- Create a new centrality measure as a function, `weighted_degree_centrality(Graph)` which takes in Graph and the returns a weighted degree centrality dictionary. 
-
-[Refer to this paper to get an insight into this approacj](https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0165781)
-
-Weighted degree is calculated by:
-
-1) __Sum the weight of the all edges of a node__
-
-2) __Normalize the weighted degree by the total weight of the graph i.e. sum of weighted degrees of all nodes__  
-
-3) __Calculated weighted degree centrality for book 1 using this function__
-
-
-```python
-def weighted_degree_centrality(G):
-    result = dict()
-    total = 0
-    for node in G.nodes():
-        weight_degree = 0
-        for n in G.edges([node], data=True):
-            weight_degree += n[2]['weight']
-        result[node] = weight_degree
-        total += weight_degree
-    for node, value in result.items():
-        result[node] = value/total
-    return result
-```
-
-
-```python
-plt.hist(list(weighted_degree_centrality(G1).values()))
-plt.show()
+edge_labels = labels = nx.get_edge_attributes(G,'weight')
+plt.figure(figsize=(12,12))
+nx.draw(G, with_labels=True, pos=nx.spring_layout(G, random_state=10),
+        edge_labels=edge_labels, alpha=.8, node_color="#1cf0c7", node_size=700);
+nx.draw_networkx_edge_labels(G,pos=nx.spring_layout(G, random_state=10),edge_labels=labels);
 ```
 
 
 ![png](index_files/index_20_0.png)
 
 
-- __Get the top 10 characters from book 1, based on weighted degree centrality and compare with the results of simple degree centrality. Record your observations below__
+## Subsetting the Graph
+
+As you can see, the above graph is undoubtedly noisy, making it difficult to discern any useful patterns. As such, reset the graph and only add edges whose weight is 75 or greater. From there, redraw the graph. To further help with the display, try using `nx.spring_layout(G, random_state=8)` for the position. To jazz it up, try and recolor those nodes which you identified as bridge or bottlekneck nodes to communication.
 
 
 ```python
-# Weighted DC
-sorted(weighted_degree_centrality(G1,).items(), key=lambda x:x[1], reverse=True)[0:10]
+# Read edge lists into dataframes
+threshold = 75
+colors = []
+G = nx.Graph()
+for row in df.index:
+    source = df['Source'][row]
+    target = df['Target'][row]
+    weight = df['weight'][row]
+    if weight >= threshold:
+        G.add_edge(source,target, weight=weight)
+edge_labels = labels = nx.get_edge_attributes(G,'weight')
+for node in G.nodes:
+    if node in centrality.index[:10]:
+        colors.append("#ffd43d")
+    else:
+        colors.append("#1cf0c7")
+plt.figure(figsize=(18,10))
+nx.draw(G, with_labels=True, pos=nx.spring_layout(G, random_state=8),
+        edge_labels=edge_labels, alpha=.8, node_color=colors, node_size=1500);
 ```
 
 
-
-
-    [('Eddard-Stark', 0.08715720879717621),
-     ('Robert-Baratheon', 0.06387455878360032),
-     ('Jon-Snow', 0.05321748574531632),
-     ('Tyrion-Lannister', 0.044121639967417865),
-     ('Sansa-Stark', 0.03699429812652729),
-     ('Bran-Stark', 0.03604398588107521),
-     ('Catelyn-Stark', 0.03529731197393429),
-     ('Robb-Stark', 0.03502579418951941),
-     ('Daenerys-Targaryen', 0.030070594623947868),
-     ('Arya-Stark', 0.02918816182459951)]
-
-
-
-
-```python
-# Un-weighted DC
-sorted(nx.degree_centrality(G1).items(), key=lambda x:x[1], reverse=True)[0:10]
-```
-
-
-
-
-    [('Eddard-Stark', 0.3548387096774194),
-     ('Robert-Baratheon', 0.2688172043010753),
-     ('Tyrion-Lannister', 0.24731182795698928),
-     ('Catelyn-Stark', 0.23118279569892475),
-     ('Jon-Snow', 0.19892473118279572),
-     ('Robb-Stark', 0.18817204301075272),
-     ('Sansa-Stark', 0.18817204301075272),
-     ('Bran-Stark', 0.17204301075268819),
-     ('Cersei-Lannister', 0.16129032258064518),
-     ('Joffrey-Baratheon', 0.16129032258064518)]
-
-
-
-
-```python
-# Your observations here 
-
-# Some characters Jon Snow , Robb Stark , Joffrey Barathon etc. gain score based on weighted centrality
-# Som eother characters go lower with weighted cebtrality
-# Eddard Stark remains the top character 
-```
-
-- __ Confirm that sum of weighted degree centralitity value for all nodes sum up to 1 i.e. normalization__
-
-
-```python
-sum(list(weighted_degree_centrality(G1).values()))
-```
-
-
-
-
-    1.0000000000000002
-
-
-
-## Betweenness centrality 
-
-- __Calculate the weighted and un-weighted "Betweenness" centrality for book 2, and compare top ten characters as above__
-- __Comment on the results__
-
-
-```python
-# Unweighted Betweenness Centrality
-sorted(nx.betweenness_centrality(G1).items(), key=lambda x:x[1], reverse=True)[0:10]
-```
-
-
-
-
-    [('Eddard-Stark', 0.2696038913836117),
-     ('Robert-Baratheon', 0.21403028397371796),
-     ('Tyrion-Lannister', 0.1902124972697492),
-     ('Jon-Snow', 0.17158135899829566),
-     ('Catelyn-Stark', 0.1513952715347627),
-     ('Daenerys-Targaryen', 0.08627015537511595),
-     ('Robb-Stark', 0.07298399629664767),
-     ('Drogo', 0.06481224290874964),
-     ('Bran-Stark', 0.05579958811784442),
-     ('Sansa-Stark', 0.03714483664326785)]
-
-
-
-
-```python
-# Weighted Betweenness similarity 
-sorted(nx.betweenness_centrality(G1, weight='weight').items(), key=lambda x:x[1], reverse=True)[0:10]
-```
-
-
-
-
-    [('Robert-Baratheon', 0.23341885664466297),
-     ('Eddard-Stark', 0.18703429235687297),
-     ('Tyrion-Lannister', 0.15311225972516293),
-     ('Robb-Stark', 0.1024018949825402),
-     ('Catelyn-Stark', 0.10169012330302643),
-     ('Jon-Snow', 0.09027684366394043),
-     ('Jaime-Lannister', 0.07745109164464009),
-     ('Rodrik-Cassel', 0.07667992877670296),
-     ('Drogo', 0.06894355184677767),
-     ('Jorah-Mormont', 0.0627085149665795)]
-
-
-
-
-```python
-# Your observations here
-
-## Unweighted : Eddard start is list the most central character
-## Weighted: Robert Barathon becomes the most central node. 
-```
-
-## Is there a correlation between node centrality measures?
-
-Well, lets find out. 
-
-
-- __Find the correlation between following:__
-    - Weighted Degree 
-    - Closeness
-    - Weighted Betweenness
-    - Weighted Eigenvector
-- __Use book 1 for the analysis (You may choose other books as well)__
-- __Calculate correlation matrix and visualize the results for all characters__
-- __Comment on the results__
-
-
-```python
-corr = pd.DataFrame.from_records([weighted_degree_centrality(G1),
-                                  nx.closeness_centrality(G1),
-                                  nx.betweenness_centrality(G1, weight='weight'), 
-                                  nx.eigenvector_centrality(G1, weight='weight')])
-corr = corr.T
-corr.columns = ['Degree', 'Closeness', 'Betweenness', 'Eigenvector']
-corr.head(10)
-```
-
-
-
-
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>Degree</th>
-      <th>Closeness</th>
-      <th>Betweenness</th>
-      <th>Eigenvector</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>Addam-Marbrand</th>
-      <td>0.000611</td>
-      <td>0.323478</td>
-      <td>0.000000</td>
-      <td>0.001551</td>
-    </tr>
-    <tr>
-      <th>Aegon-I-Targaryen</th>
-      <td>0.000611</td>
-      <td>0.376518</td>
-      <td>0.000000</td>
-      <td>0.005096</td>
-    </tr>
-    <tr>
-      <th>Aemon-Targaryen-(Maester-Aemon)</th>
-      <td>0.005023</td>
-      <td>0.336957</td>
-      <td>0.010753</td>
-      <td>0.013992</td>
-    </tr>
-    <tr>
-      <th>Aerys-II-Targaryen</th>
-      <td>0.002512</td>
-      <td>0.385892</td>
-      <td>0.007183</td>
-      <td>0.027406</td>
-    </tr>
-    <tr>
-      <th>Aggo</th>
-      <td>0.002444</td>
-      <td>0.292913</td>
-      <td>0.000450</td>
-      <td>0.000852</td>
-    </tr>
-    <tr>
-      <th>Albett</th>
-      <td>0.000747</td>
-      <td>0.332143</td>
-      <td>0.007169</td>
-      <td>0.001875</td>
-    </tr>
-    <tr>
-      <th>Alliser-Thorne</th>
-      <td>0.005430</td>
-      <td>0.363281</td>
-      <td>0.026584</td>
-      <td>0.015771</td>
-    </tr>
-    <tr>
-      <th>Alyn</th>
-      <td>0.002172</td>
-      <td>0.380368</td>
-      <td>0.002693</td>
-      <td>0.019102</td>
-    </tr>
-    <tr>
-      <th>Arthur-Dayne</th>
-      <td>0.000272</td>
-      <td>0.275964</td>
-      <td>0.000000</td>
-      <td>0.000071</td>
-    </tr>
-    <tr>
-      <th>Arya-Stark</th>
-      <td>0.029188</td>
-      <td>0.458128</td>
-      <td>0.028114</td>
-      <td>0.143378</td>
-    </tr>
-  </tbody>
-</table>
-</div>
-
-
-
-
-```python
-# plot the measures as lines to see if they correlate
-plt.rcParams["figure.figsize"] = (20,8)
-corr.plot()
-plt.legend(['Degree', 'Closeness', 'Betweenness', 'Eigenvector'], fontsize = 15)
-plt.title ('Comparing Centrality measures - Correlation', fontsize=20 )
-plt.show()
-```
-
-
-![png](index_files/index_33_0.png)
-
-
-
-```python
-# calculate Correlation matrix
-corr.corr()
-```
-
-
-
-
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>Degree</th>
-      <th>Closeness</th>
-      <th>Betweenness</th>
-      <th>Eigenvector</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>Degree</th>
-      <td>1.000000</td>
-      <td>0.713617</td>
-      <td>0.857222</td>
-      <td>0.922520</td>
-    </tr>
-    <tr>
-      <th>Closeness</th>
-      <td>0.713617</td>
-      <td>1.000000</td>
-      <td>0.675276</td>
-      <td>0.697500</td>
-    </tr>
-    <tr>
-      <th>Betweenness</th>
-      <td>0.857222</td>
-      <td>0.675276</td>
-      <td>1.000000</td>
-      <td>0.805318</td>
-    </tr>
-    <tr>
-      <th>Eigenvector</th>
-      <td>0.922520</td>
-      <td>0.697500</td>
-      <td>0.805318</td>
-      <td>1.000000</td>
-    </tr>
-  </tbody>
-</table>
-</div>
-
-
-
-
-```python
-# Your observations here 
-
-# Look at the line plots and how these measures change together. 
-# Closeness have a low correlation to rest of the measures (it depends on position rather than centrality)
-# Degree and Eigen vector are correlated (overlapping lines)
-# Betweeness is correlated (to a lesser extent) to cloeness and eigenvector
-
-
-# Confirm visual observations with the correlation matrix 
-```
-
-## Character Evolution : Bring the the rest of series 
-
-By Studying the change in centrality throughout the series, we can create an evolution of characters as the story progresses. 
-
-- __Calculate the weighted degree centrality for all five books (edge lists), and save your results in a dataframe__
-
-Hint: Fill nans with zero for values that can not be calculated  due to being extremely small
-
-
-```python
-# Create a character evolution dataframe based on weighted degree centrality from all books
-graph_lst = [G1, G2, G3, G4, G5]
-evol_degree = [weighted_degree_centrality(graph) for graph in graph_lst]
-
-# Fill Nans and view contents
-evol_degree_df = pd.DataFrame.from_records(evol_degree).fillna(0)
-evol_degree_df
-```
-
-
-
-
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>Addam-Marbrand</th>
-      <th>Aegon-Frey-(son-of-Stevron)</th>
-      <th>Aegon-I-Targaryen</th>
-      <th>Aegon-Targaryen-(son-of-Rhaegar)</th>
-      <th>Aegon-V-Targaryen</th>
-      <th>Aemon-Targaryen-(Dragonknight)</th>
-      <th>Aemon-Targaryen-(Maester-Aemon)</th>
-      <th>Aenys-Frey</th>
-      <th>Aeron-Greyjoy</th>
-      <th>Aerys-I-Targaryen</th>
-      <th>...</th>
-      <th>Yellow-Dick</th>
-      <th>Yezzan-zo-Qaggaz</th>
-      <th>Ygritte</th>
-      <th>Yohn-Royce</th>
-      <th>Yoren</th>
-      <th>Yorko-Terys</th>
-      <th>Ysilla</th>
-      <th>Yurkhaz-zo-Yunzak</th>
-      <th>Zei</th>
-      <th>Zollo</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>0.000611</td>
-      <td>0.000000</td>
-      <td>0.000611</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.005023</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>...</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.00224</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.00000</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.001336</td>
-      <td>0.000000</td>
-      <td>0.000236</td>
-      <td>0.000000</td>
-      <td>0.002673</td>
-      <td>0.000472</td>
-      <td>0.001730</td>
-      <td>0.000236</td>
-      <td>...</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.001887</td>
-      <td>0.000000</td>
-      <td>0.00684</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.00000</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>0.001711</td>
-      <td>0.001062</td>
-      <td>0.000649</td>
-      <td>0.000177</td>
-      <td>0.000000</td>
-      <td>0.000177</td>
-      <td>0.009083</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>...</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.007314</td>
-      <td>0.000177</td>
-      <td>0.00000</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.00000</td>
-      <td>0.000177</td>
-      <td>0.000472</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>0.001908</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.000318</td>
-      <td>0.000318</td>
-      <td>0.000000</td>
-      <td>0.009752</td>
-      <td>0.000000</td>
-      <td>0.012932</td>
-      <td>0.000000</td>
-      <td>...</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.003922</td>
-      <td>0.00000</td>
-      <td>0.000636</td>
-      <td>0.000000</td>
-      <td>0.00000</td>
-      <td>0.000000</td>
-      <td>0.000636</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.000350</td>
-      <td>0.011386</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>0.003591</td>
-      <td>0.001139</td>
-      <td>0.000613</td>
-      <td>0.000000</td>
-      <td>...</td>
-      <td>0.001314</td>
-      <td>0.004204</td>
-      <td>0.001489</td>
-      <td>0.000000</td>
-      <td>0.00000</td>
-      <td>0.000000</td>
-      <td>0.004029</td>
-      <td>0.00035</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-    </tr>
-  </tbody>
-</table>
-<p>5 rows × 796 columns</p>
-</div>
-
-
-
-- __Identify top 10 characters i.e. having 10 highest degree centrality values, from `evol_degree_df` and create a new dataframe with their names and centrality value__
-
-
-```python
-pd.DataFrame.from_records(evol_degree_df).max(axis=0).sort_values(ascending=False)[0:10]
-```
-
-
-
-
-    Eddard-Stark          0.087157
-    Cersei-Lannister      0.082998
-    Jon-Snow              0.066649
-    Tyrion-Lannister      0.065173
-    Robert-Baratheon      0.063875
-    Daenerys-Targaryen    0.063146
-    Jaime-Lannister       0.059148
-    Joffrey-Baratheon     0.049450
-    Bran-Stark            0.038208
-    Sansa-Stark           0.036994
-    dtype: float64
-
-
-
-- __Plot the evolution of weighted degree centrality of the above characters over the 5 books__
-- __Comment on your answer__
-
-
-```python
-evol_degree_df[list(pd.DataFrame.from_records(evol_degree_df).max(axis=0).sort_values(ascending=False)[0:10].index)].plot(figsize=(20,10))
-plt.show()
-```
-
-
-![png](index_files/index_41_0.png)
-
-
-
-```python
-# Your observations here 
-
-# After book 2, Edward Stark loses its cebtrality 
-# In book 3, Cersei Lannister becomes the central character , loses it again in book 5
-# Jon Snow and Bran Stark become popular in book 5
-# Book 2 is the most balanced one , in terms that most top 10 characters have average centrality, nothing super central 
-
-# Add more to this view and results if you are die hard GoT fan. 
-```
-
-#### Repeat Above for Weighted Betweenness Centrality
-
-
-```python
-evol_betweenness = [nx.betweenness_centrality(graph, weight='weight') for graph in [G1, G2, G3, G4, G5]]
-evol_betweenness_df = pd.DataFrame.from_records(evol_betweenness).fillna(0)
-evol_betweenness_df[list(pd.DataFrame.from_records(evol_betweenness_df).max(axis=0).sort_values(ascending=False)[0:10].index)].plot(figsize=(20,10))
-plt.show()
-```
-
-
-![png](index_files/index_44_0.png)
-
-
-
-```python
-# Record Your observations here 
-```
-
-## Level Up: Visualize the Graphs (optional)
-
-- Use the techniques seen so far to visualize and customize the graphs 
-- Study the shapes of the graphs in terms of spread , clusters etc and see if you can identify any links to the actual books (or the TV series)
-
-
-```python
-import networkx as nx
-nx.draw(G1, with_labels=True)
-```
-
-
-![png](index_files/index_47_0.png)
-
-
-
-```python
-nx.draw(G2, with_labels=True)
-```
-
-
-![png](index_files/index_48_0.png)
-
-
-
-```python
-nx.draw(G3, with_labels=True)
-```
-
-
-![png](index_files/index_49_0.png)
-
-
-
-```python
-nx.draw(G4, with_labels=True)
-```
-
-
-![png](index_files/index_50_0.png)
-
-
-
-```python
-nx.draw(G5, with_labels=True)
-```
-
-
-![png](index_files/index_51_0.png)
+![png](index_files/index_22_0.png)
 
 
 ## Summary 
