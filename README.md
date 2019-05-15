@@ -36,9 +36,7 @@ warnings.filterwarnings('ignore')
 
 Start by loading the dataset as a pandas DataFrame. From this, you'll then create a network representation of the dataset using NetworkX. 
 
-The dataset is broken into 10 different files: 2 files for each of the 5 books. One of these files contains node data for each book, while the other contains edge data. Load in the edge data for the 5 books and concatenate them into a single DataFrame.
-
-Example file names are `asoiaf-book1-edges.csv` and `asoiaf-book1-nodes.csv`. 
+The dataset is stored in the file `asoiaf-all-edges.csv`.
 
 
 ```python
