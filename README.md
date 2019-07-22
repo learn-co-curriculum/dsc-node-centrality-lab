@@ -120,20 +120,15 @@ df.head()
 
 
 
-## Create Empty graph instances for each book
-
-
-```python
-# Create empty instances for each book above
-G = nx.Graph()
-```
-
 ## Create a Graph
 
 Now that you have the data loaded as a pandas DataFrame, iterate through the data and create appropriate edges to the empty graph you instantiated above. Be sure to add the weight to each edge.
 
 
 ```python
+# Create an empty graph instance
+G = nx.Graph()
+
 # Read edge lists into dataframes
 for row in df.index:
     source = df['Source'][row]
@@ -154,7 +149,7 @@ plt.title('Top 10 Characters by Degree Centrality');
 ```
 
 
-![png](index_files/index_10_0.png)
+![png](index_files/index_8_0.png)
 
 
 ## Closeness Centrality
@@ -168,7 +163,7 @@ plt.title('Top 10 Characters by Closeness Centrality');
 ```
 
 
-![png](index_files/index_12_0.png)
+![png](index_files/index_10_0.png)
 
 
 ## Betweeness Centrality
@@ -182,7 +177,7 @@ plt.title('Top 10 Characters by Betweeness Centrality');
 ```
 
 
-![png](index_files/index_14_0.png)
+![png](index_files/index_12_0.png)
 
 
 ## Putting it All Together
@@ -410,7 +405,7 @@ nx.draw_networkx_edge_labels(G,pos=nx.spring_layout(G, random_state=10),edge_lab
 ```
 
 
-![png](index_files/index_20_0.png)
+![png](index_files/index_18_0.png)
 
 
 ## Subsetting the Graph
@@ -441,7 +436,7 @@ nx.draw(G, with_labels=True, pos=nx.spring_layout(G, random_state=8),
 ```
 
 
-![png](index_files/index_22_0.png)
+![png](index_files/index_20_0.png)
 
 
 ## Summary 
