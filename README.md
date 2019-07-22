@@ -118,19 +118,14 @@ The dataset is stored in the file `asoiaf-all-edges.csv`.
 
 
 
-## Create Empty graph instances for each book
-
-
-```python
-# Create empty instances for each book above
-```
-
 ## Create a Graph
 
 Now that you have the data loaded as a pandas DataFrame, iterate through the data and create appropriate edges to the empty graph you instantiated above. Be sure to add the weight to each edge.
 
 
 ```python
+# Create an empty graph instance
+
 # Read edge lists into dataframes
 ```
 
