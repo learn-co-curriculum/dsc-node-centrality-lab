@@ -399,9 +399,9 @@ To visualize all of these relationships, draw a graph of the network.
 ```python
 edge_labels = labels = nx.get_edge_attributes(G,'weight')
 plt.figure(figsize=(12,12))
-nx.draw(G, with_labels=True, pos=nx.spring_layout(G, random_state=10),
+nx.draw(G, with_labels=True, pos=nx.spring_layout(G),
         edge_labels=edge_labels, alpha=.8, node_color="#1cf0c7", node_size=700);
-nx.draw_networkx_edge_labels(G,pos=nx.spring_layout(G, random_state=10),edge_labels=labels);
+nx.draw_networkx_edge_labels(G,pos=nx.spring_layout(G),edge_labels=labels);
 ```
 
 
@@ -410,7 +410,7 @@ nx.draw_networkx_edge_labels(G,pos=nx.spring_layout(G, random_state=10),edge_lab
 
 ## Subsetting the Graph
 
-As you can see, the above graph is undoubtedly noisy, making it difficult to discern any useful patterns. As such, reset the graph and only add edges whose weight is 75 or greater. From there, redraw the graph. To further help with the display, try using `nx.spring_layout(G, random_state=8)` for the position. To jazz it up, try and recolor those nodes which you identified as bridge or bottleneck nodes to communication.
+As you can see, the above graph is undoubtedly noisy, making it difficult to discern any useful patterns. As such, reset the graph and only add edges whose weight is 75 or greater. From there, redraw the graph. To further help with the display, try using `nx.spring_layout(G)` for the position. To jazz it up, try and recolor those nodes which you identified as bridge or bottleneck nodes to communication.
 
 
 ```python
@@ -431,7 +431,7 @@ for node in G.nodes:
     else:
         colors.append("#1cf0c7")
 plt.figure(figsize=(18,10))
-nx.draw(G, with_labels=True, pos=nx.spring_layout(G, random_state=8),
+nx.draw(G, with_labels=True, pos=nx.spring_layout(G),
         edge_labels=edge_labels, alpha=.8, node_color=colors, node_size=1500);
 ```
 
