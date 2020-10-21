@@ -25,9 +25,6 @@ import networkx as nx
 import matplotlib.pyplot as plt
 import seaborn as sns
 sns.set_style('darkgrid')
-import warnings
-warnings.filterwarnings('ignore')
-
 %matplotlib inline
 ```
 
@@ -45,81 +42,6 @@ df = None
 # Print the first five rows
 
 ```
-
-
-
-
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>Source</th>
-      <th>Target</th>
-      <th>Type</th>
-      <th>id</th>
-      <th>weight</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>Addam-Marbrand</td>
-      <td>Brynden-Tully</td>
-      <td>Undirected</td>
-      <td>0</td>
-      <td>3</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>Addam-Marbrand</td>
-      <td>Cersei-Lannister</td>
-      <td>Undirected</td>
-      <td>1</td>
-      <td>3</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>Addam-Marbrand</td>
-      <td>Gyles-Rosby</td>
-      <td>Undirected</td>
-      <td>2</td>
-      <td>3</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>Addam-Marbrand</td>
-      <td>Jaime-Lannister</td>
-      <td>Undirected</td>
-      <td>3</td>
-      <td>14</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>Addam-Marbrand</td>
-      <td>Jalabhar-Xho</td>
-      <td>Undirected</td>
-      <td>4</td>
-      <td>3</td>
-    </tr>
-  </tbody>
-</table>
-</div>
-
-
 
 ## Create a Graph
 
