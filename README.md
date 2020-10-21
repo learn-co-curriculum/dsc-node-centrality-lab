@@ -25,9 +25,6 @@ import networkx as nx
 import matplotlib.pyplot as plt
 import seaborn as sns
 sns.set_style('darkgrid')
-import warnings
-warnings.filterwarnings('ignore')
-
 %matplotlib inline
 ```
 
@@ -398,11 +395,11 @@ To visualize all of these relationships, draw a graph of the network.
 
 
 ```python
-edge_labels = labels = nx.get_edge_attributes(G, 'weight')
+edge_labels = nx.get_edge_attributes(G, 'weight')
 plt.figure(figsize=(12,12))
 nx.draw(G, with_labels=True, pos=nx.spring_layout(G),
-        edge_labels=edge_labels, alpha=0.8, node_color='#1cf0c7', node_size=700);
-nx.draw_networkx_edge_labels(G,pos=nx.spring_layout(G),edge_labels=labels);
+        alpha=0.8, node_color='#1cf0c7', node_size=700);
+nx.draw_networkx_edge_labels(G,pos=nx.spring_layout(G), edge_labels=edge_labels);
 ```
 
 
@@ -425,7 +422,7 @@ for row in df.index:
     weight = df['weight'][row]
     if weight >= threshold:
         G.add_edge(source,target, weight=weight)
-edge_labels = labels = nx.get_edge_attributes(G,'weight')
+edge_labels = nx.get_edge_attributes(G,'weight')
 for node in G.nodes:
     if node in centrality.index[:10]:
         colors.append('#ffd43d')
@@ -433,7 +430,8 @@ for node in G.nodes:
         colors.append('#1cf0c7')
 plt.figure(figsize=(18,10))
 nx.draw(G, with_labels=True, pos=nx.spring_layout(G),
-        edge_labels=edge_labels, alpha=.8, node_color=colors, node_size=1500);
+        alpha=.8, node_color=colors, node_size=1500)
+nx.draw_networkx_edge_labels(G,pos=nx.spring_layout(G), edge_labels=edge_labels);
 ```
 
 
